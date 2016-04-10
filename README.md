@@ -11,4 +11,3 @@ This project get data from api (http://private-9f3c8-angstrom.apiary-mock.com/sy
 Clone the repository to your local directory and run it on Chrome or Firefox.
 
 git clone https://github.com/RisingSun1116/Web_based_diagram
-...
