@@ -7,6 +7,12 @@ $( document ).ready(function() {
 		var betw = 0;
 		var graph;
 		var table;
+		var node_w = 120;
+		var node_h = 90;
+		var text_margin = 10;
+		var r_circle = 5;
+		var dash_hight = 800;
+		var fontsize = 12;
 		
 		$.ajax({ 
 			type: 'GET', 
@@ -26,18 +32,12 @@ $( document ).ready(function() {
 		function doneResizing(){
 			width = window.innerWidth;
 			var h = window.innerHeight;
-			mleft = Math.floor(width/12);
 			location.reload(true);
 			start();
-			console.log("after rezised event");
 		}
 			
 		var width = window.innerWidth;
 		mleft = Math.floor(width/12);
-		window.onresize = function(event) {
-			console.log(mleft);
-			
-		};
 	
 	function start(){
 		console.log("changed event");
@@ -45,10 +45,29 @@ $( document ).ready(function() {
 		  if(top_level<data["Level"])
 			  top_level = data["Level"];
 		});
-		
-		if(width < 700)
-			width = 700;
-		betw = Math.floor((width - top_level * 120 - 2 * mleft)/ (top_level - 1));
+		var length = Math.floor(top_level + top_level * 0.5);
+		if(width < length * 120)
+		{
+			r_circle = 3;
+			text_margin = 0;
+			mleft = Math.floor(width/40);
+			node_w = Math.floor((width - 2 * (mleft + 5)) / length);
+			node_h = Math.floor((node_w * 9) / 12);
+			dash_hight = width;
+			fontsize = 10;
+			if(width < 400)
+				fontsize = 7;
+		}
+		else {
+			r_circle = 5;
+			node_w = 120;
+			node_h = 90;
+			text_margin = 10;
+			dash_hight = 800;
+			fontsize = 12;
+		}
+		console.log(node_w);
+		betw = Math.floor((width - top_level * node_w - 2 * (mleft + 3))/ (top_level - 1));
 		console.log(width);
 		draw_diagram(graph);
 	}
@@ -65,13 +84,13 @@ $( document ).ready(function() {
 				.selectAll("line").data(graph.Connections)
 				.enter().append("line")
 				.attr("x1", function (d) {
-					return (graph["Components"][d.From-1].Level-1) * (betw + 120) + mleft + 120;
+					return (graph["Components"][d.From-1].Level-1) * (betw + node_w) + mleft + node_w;
 				})
 				.attr("y1", function (d) {
 					return findFrom(d.From);
 				})
 				.attr("x2", function (d) {
-					return (graph["Components"][d.To-1].Level-1) * (betw + 120) + mleft;
+					return (graph["Components"][d.To-1].Level-1) * (betw + node_w) + mleft;
 				})
 				.attr("y2", function (d) {
 					return findFrom(d.To);
@@ -82,21 +101,21 @@ $( document ).ready(function() {
 				.append("line")
 				.style("stroke", "#8f8f8f")
 				.attr("x1", function () {
-					return (betw + 120) * (i - 1) + betw/2 + 120 + mleft;
+					return (betw + node_w) * (i - 1) + betw/2 + node_w + mleft;
 				})
 				.attr("y1", 0)
 				.attr("x2", function () {
-					return (betw + 120) * (i - 1) + betw/2 + 120 + mleft;
+					return (betw + node_w) * (i - 1) + betw/2 + node_w + mleft;
 				})
-				.attr("y2", 800);
+				.attr("y2", dash_hight);
 		}		
 
 		var right_circles = svg.selectAll("circle")
 	            .data(graph.Components)
                 .enter().append("circle")
-                .attr("r", 5)
+                .attr("r", r_circle)
                 .attr("cx", function (d, i) {
-                    return (graph["Components"][d.ID-1].Level-1) * (betw + 120) + mleft + 120;
+                    return (graph["Components"][d.ID-1].Level-1) * (betw + node_w) + mleft + node_w;
                 })
                 .attr("cy", function (d, i) {
                     return findFrom(d.ID);
@@ -105,9 +124,9 @@ $( document ).ready(function() {
 		var left_circles = svg.selectAll("lcircle")
 	            .data(graph.Components)
                 .enter().append("circle")
-                .attr("r", 5)
+                .attr("r", r_circle)
                 .attr("cx", function (d, i) {
-                    return (graph["Components"][d.ID-1].Level-1) * (betw + 120) + mleft;
+                    return (graph["Components"][d.ID-1].Level-1) * (betw + node_w) + mleft;
                 })
                 .attr("cy", function (d, i) {
                     return findFrom(d.ID);
@@ -118,23 +137,24 @@ $( document ).ready(function() {
                 .enter().append("rect")
 				.attr("rx", 8)
 				.attr("ry", 6)
-                .attr("width", 120)
-				.attr("height", 90)
+                .attr("width", node_w)
+				.attr("height", node_h)
                 .attr("x", function (d, i) {
-                    return (d.Level-1) * (betw + 120) + mleft;
+                    return (d.Level-1) * (betw + node_w) + mleft;
                 })
                 .attr("y", function (d, i) {
                     return findYpos(d.Level, d.ID);
                 });
-		console.log(betw);
+				
 		var texts = svg.selectAll("texts")
 				.data(graph.Components)
 				.enter().append("text")
+				.attr('font-size',fontsize)
 				.attr("x", function (d, i) {
-					return (d.Level-1) * (betw + 120) + mleft + 10;
+					return (d.Level-1) * (betw + node_w) + mleft + text_margin;
 				})
 				.attr("y", function (d, i) {
-					return findYpos(d.Level, d.ID) + 45;
+					return findYpos(d.Level, d.ID) + Math.floor(node_h / 2);
 				})
 				.attr("dy", ".20em")
 				.text(function(d) { return d.Name; });
@@ -160,7 +180,7 @@ $( document ).ready(function() {
 					temp = count;
 			}
 		}
-		return temp*120;
+		return temp * node_w;
 	}
 	
 	function findFrom(index){
@@ -174,7 +194,7 @@ $( document ).ready(function() {
 					temp = count;
 			}
 		}
-		return temp*120+45;
+		return temp * node_w + node_h / 2;
 	}
 });
 	

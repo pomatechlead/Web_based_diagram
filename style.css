@@ -10,11 +10,14 @@ line {
 }
 
 text {
-	font-size: 12px;
+#	font-size: 12px;
 }
 
 circle {
 	fill: #437743;
 	stroke: #437743;
 	stroke-width: 1px;
+}
+body {
+	margin-left : 0px;
 }
